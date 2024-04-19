@@ -1,122 +1,184 @@
-/* eslint-disable react-hooks/rules-of-hooks */
-/* eslint-disable react/prop-types */
 import { useState } from "react";
 
-function Square({ value, onSquareClick }) {
-  return (
-    <button className="square" onClick={onSquareClick}>
-      {value}
-    </button>
-  );
-}
+/* eslint-disable react/prop-types */
+const groceryItems = [
+  {
+    id: 1,
+    name: "Kopi Bubuk",
+    quantity: 2,
+    checked: true,
+  },
+  {
+    id: 2,
+    name: "Gula Pasir",
+    quantity: 5,
+    checked: false,
+  },
+  {
+    id: 3,
+    name: "Air Mineral",
+    quantity: 3,
+    checked: false,
+  },
+];
 
-function Board({ squares, xIsNext, onPlay }) {
-  function handleClick(i) {
-    if (squares[i] || calculateWinner(squares)) {
-      return;
-    }
-    const nextSquares = [...squares];
-    nextSquares[i] = xIsNext ? "X" : "O";
+export default function App() {
+  const [items, setItems] = useState(groceryItems);
 
-    onPlay(nextSquares);
+  function handleAddItem(item) {
+    setItems([...items, item]);
   }
 
-  const winner = calculateWinner(squares);
-
-  const status = winner
-    ? "Winner : " + winner
-    : "Next Player : " + (xIsNext ? "X" : "O");
-  return (
-    <>
-      <div className="info">{status}</div>
-      <div className="board">
-        {squares.map((square, index) => {
-          return (
-            <Square
-              key={index}
-              onSquareClick={() => handleClick(index)}
-              value={square}
-            />
-          );
-        })}
-      </div>
-    </>
-  );
-}
-
-export default function game() {
-  const [history, setHistory] = useState([Array(9).fill(null)]);
-  const [xIsNext, setXisNext] = useState(true);
-  const [curentMove, setCurrentMove] = useState(0);
-  const currentSquares = history[curentMove];
-
-  function jumpTo(move) {
-    setCurrentMove(move);
-    setXisNext(move % 2 === 0);
+  function handleDeleteItem(id) {
+    setItems((items) => items.filter((item) => item.id !== id));
   }
 
-  function handlePlay(nextSquares) {
-    const nextHistory = [...history.slice(0, curentMove + 1), nextSquares];
-    setCurrentMove(nextHistory.length - 1);
-    setHistory(nextHistory);
-    setXisNext(!xIsNext);
-  }
-
-  const moves = history.map((squares, move) => {
-    const description = move > 0 ? "Go to Move " + move : "Go to Game Start";
-
-    return (
-      <li key={move}>
-        <button key={move} onClick={() => jumpTo(move)}>
-          {description}
-        </button>
-      </li>
+  function handleToggleItem(id) {
+    setItems(
+      [...items].map((item) =>
+        item.id === id ? { ...item, checked: !item.checked } : item
+      )
     );
-  });
+  }
+
+  function handleClearItems() {
+    setItems([]);
+  }
+
+  return (
+    <div className="app">
+      <Header />
+      <Form onAddItem={handleAddItem} />
+      <GroceryList
+        items={items}
+        onDeleteItem={handleDeleteItem}
+        onToggleItem={handleToggleItem}
+        onClearItems={handleClearItems}
+      />
+      <Footer items={items} />
+    </div>
+  );
+}
+
+function Header() {
+  return <h1>Catatan Belanjaku 📝</h1>;
+}
+
+function Form({ onAddItem }) {
+  const [name, setName] = useState("");
+  const [quantity, setQuantity] = useState(1);
+
+  function handleSubmit(e) {
+    e.preventDefault();
+
+    if (!name) return;
+
+    const newItem = { name, quantity, checked: false, id: Date.now() };
+
+    onAddItem(newItem);
+
+    setName("");
+    setQuantity(1);
+  }
+
+  const quantityNum = [...Array(20)].map((_, i) => (
+    <option value={i + 1} key={i + 1}>
+      {i + 1}
+    </option>
+  ));
+
+  return (
+    <form className="add-form" onSubmit={handleSubmit}>
+      <h3>Hari ini belanja apa kita?</h3>
+      <div>
+        <select
+          value={quantity}
+          onChange={(e) => setQuantity(Number(e.target.value))}
+        >
+          {quantityNum}
+        </select>
+        <input
+          type="text"
+          placeholder="nama barang..."
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+      </div>
+      <button type="submit">Tambah</button>
+    </form>
+  );
+}
+
+function GroceryList({ items, onDeleteItem, onToggleItem, onClearItems }) {
+  const [sortBy, setSortBy] = useState("input");
+
+  let sortedItems;
+
+  if (sortBy === "input") {
+    sortedItems = items;
+  }
+
+  if (sortBy === "name") {
+    sortedItems = items.slice().sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  if (sortBy === "checked") {
+    sortedItems = items.slice().sort((a, b) => a.checked - b.checked);
+  }
 
   return (
     <>
-      <div className="game">
-        <div className="game-board">
-          <Board
-            squares={currentSquares}
-            xIsNext={xIsNext}
-            onPlay={handlePlay}
-          />
-        </div>
-
-        <div className="time-travel">
-          <ul>{moves}</ul>
-        </div>
+      <div className="list">
+        <ul>
+          {sortedItems.map((item) => {
+            return (
+              <Item
+                item={item}
+                key={item.id}
+                onDeleteItem={onDeleteItem}
+                onToggleItem={onToggleItem}
+              />
+            );
+          })}
+        </ul>
+      </div>
+      <div className="actions">
+        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+          <option value="input">Urutkan berdasarkan urutan input</option>
+          <option value="name">Urutkan berdasarkan nama barang</option>
+          <option value="checked">Urutkan berdasarkan ceklis</option>
+        </select>
+        <button onClick={onClearItems}>Bersihkan Daftar</button>
       </div>
     </>
   );
 }
 
-function calculateWinner(squares) {
-  const lines = [
-    // Garis horizontal
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    // Garis vertikal
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    // Garis diagonal
-    [0, 4, 8],
-    [2, 4, 6],
-  ];
+function Item({ item, onDeleteItem, onToggleItem }) {
+  return (
+    <li key={item.id}>
+      <input
+        type="checkbox"
+        checked={item.checked}
+        onChange={() => onToggleItem(item.id)}
+      />
+      <span style={item.checked ? { textDecoration: "line-through" } : {}}>
+        {item.quantity} {item.name}
+      </span>
+      <button onClick={() => onDeleteItem(item.id)}>&times;</button>
+    </li>
+  );
+}
 
-  for (let i = 0; i < lines.length; i++) {
-    const a = lines[i][0];
-    const b = lines[i][1];
-    const c = lines[i][2];
+function Footer({ items }) {
+  const totalItems = items.length;
+  const checkedItems = items.filter((item) => item.checked).length;
+  const percentage = Math.round((checkedItems / totalItems) * 100);
 
-    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
-    }
-  }
-
-  return false;
+  return (
+    <footer className="stats">
+      Ada {totalItems} barang di daftar belanjaan, {checkedItems} barang sudah
+      dibeli ({percentage}%)
+    </footer>
+  );
 }
