@@ -1,184 +1,197 @@
-import { useState } from "react";
-
 /* eslint-disable react/prop-types */
-const groceryItems = [
+import { useState } from "react";
+import "./App.css";
+import { Children } from "react";
+
+const animesData = [
   {
-    id: 1,
-    name: "Kopi Bubuk",
-    quantity: 2,
-    checked: true,
+    mal_id: 21,
+    title: "One Piece",
+    year: 1999,
+    image: "https://cdn.myanimelist.net/images/anime/6/73245.jpg",
+    score: 8.71,
+    synopsis:
+      "Barely surviving in a barrel after passing through a terrible whirlpool at sea, carefree Monkey D. Luffy ends up aboard a ship under attack by fearsome pirates. Despite being a naive-looking teenager, he is not to be underestimated. Unmatched in battle, Luffy is a pirate himself who resolutely pursues the coveted One Piece treasure and the King of the Pirates title that comes with it.",
   },
   {
-    id: 2,
-    name: "Gula Pasir",
-    quantity: 5,
-    checked: false,
+    mal_id: 20,
+    title: "Naruto",
+    year: 2002,
+    image: "https://cdn.myanimelist.net/images/anime/13/17405.jpg",
+    score: 8.71,
+    synopsis:
+      "Moments prior to Naruto Uzumaki's birth, a huge demon known as the Kyuubi, the Nine-Tailed Fox, attacked Konohagakure, the Hidden Leaf Village, and wreaked havoc. In order to put an end to the Kyuubi's rampage, the leader of the village, the Fourth Hokage, sacrificed his life and sealed the monstrous beast inside the newborn Naruto.",
   },
   {
-    id: 3,
-    name: "Air Mineral",
-    quantity: 3,
-    checked: false,
+    mal_id: 269,
+    title: "Bleach",
+    year: 2004,
+    image: "https://cdn.myanimelist.net/images/anime/3/40451.jpg",
+    score: 8.71,
+    synopsis:
+      "Ichigo Kurosaki is an ordinary high schooler—until his family is attacked by a Hollow, a corrupt spirit that seeks to devour human souls. It is then that he meets a Soul Reaper named Rukia Kuchiki, who gets injured while protecting Ichigo's family from the assailant.",
+  },
+  {
+    mal_id: 31964,
+    title: "Boku no Hero Academia",
+    year: 2016,
+    image: "https://cdn.myanimelist.net/images/anime/10/78745.jpg",
+    score: 8.71,
+    synopsis:
+      'The appearance of "quirks", newly discovered super powers, has been steadily increasing over the years, with 80 percent of humanity possessing various abilities from manipulation of elements to shapeshifting. This leaves the remainder of the world completely powerless, and Izuku Midoriya is one such individual.',
   },
 ];
 
 export default function App() {
-  const [items, setItems] = useState(groceryItems);
+  const [animes, setAnimes] = useState(animesData);
+  const [selectedAnime, setSelectedAnime] = useState(animes[0]);
 
-  function handleAddItem(item) {
-    setItems([...items, item]);
-  }
-
-  function handleDeleteItem(id) {
-    setItems((items) => items.filter((item) => item.id !== id));
-  }
-
-  function handleToggleItem(id) {
-    setItems(
-      [...items].map((item) =>
-        item.id === id ? { ...item, checked: !item.checked } : item
-      )
-    );
-  }
-
-  function handleClearItems() {
-    setItems([]);
-  }
-
-  return (
-    <div className="app">
-      <Header />
-      <Form onAddItem={handleAddItem} />
-      <GroceryList
-        items={items}
-        onDeleteItem={handleDeleteItem}
-        onToggleItem={handleToggleItem}
-        onClearItems={handleClearItems}
-      />
-      <Footer items={items} />
-    </div>
-  );
-}
-
-function Header() {
-  return <h1>Catatan Belanjaku 📝</h1>;
-}
-
-function Form({ onAddItem }) {
-  const [name, setName] = useState("");
-  const [quantity, setQuantity] = useState(1);
-
-  function handleSubmit(e) {
-    e.preventDefault();
-
-    if (!name) return;
-
-    const newItem = { name, quantity, checked: false, id: Date.now() };
-
-    onAddItem(newItem);
-
-    setName("");
-    setQuantity(1);
-  }
-
-  const quantityNum = [...Array(20)].map((_, i) => (
-    <option value={i + 1} key={i + 1}>
-      {i + 1}
-    </option>
-  ));
-
-  return (
-    <form className="add-form" onSubmit={handleSubmit}>
-      <h3>Hari ini belanja apa kita?</h3>
-      <div>
-        <select
-          value={quantity}
-          onChange={(e) => setQuantity(Number(e.target.value))}
-        >
-          {quantityNum}
-        </select>
-        <input
-          type="text"
-          placeholder="nama barang..."
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </div>
-      <button type="submit">Tambah</button>
-    </form>
-  );
-}
-
-function GroceryList({ items, onDeleteItem, onToggleItem, onClearItems }) {
-  const [sortBy, setSortBy] = useState("input");
-
-  let sortedItems;
-
-  if (sortBy === "input") {
-    sortedItems = items;
-  }
-
-  if (sortBy === "name") {
-    sortedItems = items.slice().sort((a, b) => a.name.localeCompare(b.name));
-  }
-
-  if (sortBy === "checked") {
-    sortedItems = items.slice().sort((a, b) => a.checked - b.checked);
+  function handleSelectedAnime(id) {
+    const newAnime = animes.filter((anime) => anime.mal_id === id);
+    setSelectedAnime(newAnime[0]);
   }
 
   return (
     <>
-      <div className="list">
-        <ul>
-          {sortedItems.map((item) => {
-            return (
-              <Item
-                item={item}
-                key={item.id}
-                onDeleteItem={onDeleteItem}
-                onToggleItem={onToggleItem}
-              />
-            );
-          })}
-        </ul>
-      </div>
-      <div className="actions">
-        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-          <option value="input">Urutkan berdasarkan urutan input</option>
-          <option value="name">Urutkan berdasarkan nama barang</option>
-          <option value="checked">Urutkan berdasarkan ceklis</option>
-        </select>
-        <button onClick={onClearItems}>Bersihkan Daftar</button>
-      </div>
+      <Navbar>
+        <Search>
+          <NumResult animes={animes} />
+        </Search>
+      </Navbar>
+      <Main>
+        <Box>
+          <AnimeList animes={animes} onSelectedAnime={handleSelectedAnime} />
+        </Box>
+        <Box>
+          <AnimeDetail selectedAnime={selectedAnime} />
+        </Box>
+      </Main>
     </>
   );
 }
 
-function Item({ item, onDeleteItem, onToggleItem }) {
+function Navbar({ children }) {
   return (
-    <li key={item.id}>
+    <nav className="nav-bar">
+      <Logo />
+      {children}
+    </nav>
+  );
+}
+
+function Logo() {
+  return (
+    <div className="logo">
+      <span role="img">🍥</span>
+      <h1>WeeBoo</h1>
+      <span role="img">🍥</span>
+    </div>
+  );
+}
+
+function Search({ children }) {
+  const [query, setQuery] = useState("");
+
+  return (
+    <div className="search-container">
       <input
-        type="checkbox"
-        checked={item.checked}
-        onChange={() => onToggleItem(item.id)}
+        className="search"
+        type="text"
+        placeholder="Search anime..."
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
       />
-      <span style={item.checked ? { textDecoration: "line-through" } : {}}>
-        {item.quantity} {item.name}
-      </span>
-      <button onClick={() => onDeleteItem(item.id)}>&times;</button>
+      {children}
+    </div>
+  );
+}
+
+function NumResult({ animes }) {
+  return (
+    <p className="search-results">
+      Found <strong>{animes.length}</strong> results
+    </p>
+  );
+}
+
+function Main({ children }) {
+  return <main className="main">{children}</main>;
+}
+
+function Box({ children }) {
+  const [isOpen, setIsOpen] = useState(true);
+
+  return (
+    <div className="box">
+      <button className="btn-toggle" onClick={() => setIsOpen((open) => !open)}>
+        {isOpen ? "–" : "+"}
+      </button>
+      {isOpen && children}
+    </div>
+  );
+}
+
+// function SelectedBox({ selectedAnime }) {
+//   const [isOpen2, setIsOpen2] = useState(true);
+
+//   return (
+//     <div className="box">
+//       <button
+//         className="btn-toggle"
+//         onClick={() => setIsOpen2((open) => !open)}
+//       >
+//         {isOpen2 ? "–" : "+"}
+//       </button>
+//       {isOpen2 && <AnimeDetail selectedAnime={selectedAnime} />}
+//     </div>
+//   );
+// }
+
+function AnimeList({ animes, onSelectedAnime }) {
+  return (
+    <ul className="list list-anime">
+      {animes?.map((anime) => (
+        <Anime
+          key={anime.mal_id}
+          anime={anime}
+          onSelectedAnime={onSelectedAnime}
+        />
+      ))}
+    </ul>
+  );
+}
+
+function Anime({ anime, onSelectedAnime }) {
+  return (
+    <li onClick={() => onSelectedAnime(anime.mal_id)}>
+      <img src={anime.image} alt={`${anime.title} cover`} />
+      <h3>{anime.title}</h3>
+      <div>
+        <p>
+          <span>{anime.year}</span>
+        </p>
+      </div>
     </li>
   );
 }
 
-function Footer({ items }) {
-  const totalItems = items.length;
-  const checkedItems = items.filter((item) => item.checked).length;
-  const percentage = Math.round((checkedItems / totalItems) * 100);
-
+function AnimeDetail({ selectedAnime }) {
   return (
-    <footer className="stats">
-      Ada {totalItems} barang di daftar belanjaan, {checkedItems} barang sudah
-      dibeli ({percentage}%)
-    </footer>
+    <div className="details">
+      <header>
+        <img src={selectedAnime.image} alt={`${selectedAnime.title} cover`} />
+        <div className="details-overview">
+          <h2>{selectedAnime.title}</h2>
+          <p>
+            {selectedAnime.year} &bull; {selectedAnime.score}
+          </p>
+        </div>
+      </header>
+      <section>
+        <p>
+          <em>{selectedAnime.synopsis}</em>
+        </p>
+      </section>
+    </div>
   );
 }
